@@ -1,6 +1,3 @@
-# TranslationOptimizer.ts
-
-```typescript
 import type { DialogueSegment, TranslatedSegment } from '../types';
 import { GoogleGenAI } from "@google/genai";
 
