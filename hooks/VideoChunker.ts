@@ -1,6 +1,3 @@
-# VideoChunker.ts
-
-```typescript
 import type { DialogueSegment } from '../types';
 
 interface VideoChunk {
