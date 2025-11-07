@@ -166,4 +166,3 @@ Respond with ONLY the translated text, without any explanation or formatting.`;
     return groups;
   }
 }
-```
