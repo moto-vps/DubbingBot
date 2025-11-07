@@ -125,7 +125,7 @@ export const useVideoProcessor = () => {
 
       await new Promise<void>((resolve, reject) => {
         videoElement!.onloadedmetadata = () => resolve();
-        videoElement!.onerror = (e) => reject(\`Error loading video metadata: \${e}\`);
+        videoElement!.onerror = (e) => reject('Error loading video metadata: ' + e);
       });
       const duration = videoElement.duration;
 
