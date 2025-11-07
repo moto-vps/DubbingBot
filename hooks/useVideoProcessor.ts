@@ -149,7 +149,7 @@ export const useVideoProcessor = () => {
       setProcessingState({ status: 'processing', progress: 15 });
       const audioWavBlob = audioBufferToWavBlob(fullAudioBuffer);
       const audioBase64 = await blobToBase64(audioWavBlob);
-      const transcriptionPrompt = \`You are an expert audio analyst. Transcribe the provided audio and perform speaker diarization. Identify each speaker with a unique ID like "Speaker 1". Provide precise start and end timestamps in seconds for each dialogue segment. Respond ONLY with a JSON array of objects following this exact schema: [{ "speakerId": string, "startTime": number, "endTime": number, "transcription": string }]\`;
+      const transcriptionPrompt = 'You are an expert audio analyst. Transcribe the provided audio and perform speaker diarization. Identify each speaker with a unique ID like \"Speaker 1\". Provide precise start and end timestamps in seconds for each dialogue segment. Respond ONLY with a JSON array of objects following this exact schema: [{ \"speakerId\": string, \"startTime\": number, \"endTime\": number, \"transcription\": string }]';
       const audioPart = { inlineData: { mimeType: 'audio/wav', data: audioBase64 } };
       const textPart = { text: transcriptionPrompt };
       const transcriptionResponse = await ai.models.generateContent({
@@ -164,7 +164,7 @@ export const useVideoProcessor = () => {
       const speakerProfiles = new Map<string, SpeakerProfile>();
       const uniqueSpeakerIds = [...new Set(allDialogueSegments.map(s => s.speakerId))];
       
-      const voiceCatalog = VOICE_LIST.map(v => \`- \${v.name} (\${v.gender}): \${v.description}\`).join('\n');
+      const voiceCatalog = VOICE_LIST.map(v => '- ' + v.name + ' (' + v.gender + '): ' + v.description).join('\n');
 
       for (const speakerId of uniqueSpeakerIds) {
         const segmentsForSpeaker = allDialogueSegments.filter(s => s.speakerId === speakerId);
@@ -190,19 +190,13 @@ export const useVideoProcessor = () => {
           frameParts.push({ inlineData: { mimeType: 'image/jpeg', data: frameBase64 } });
         }
         
-        const analysisPrompt = \`You are an expert voice casting director. Your task is to create a profile for a speaker for voice dubbing.
-
-Analyze the speaker's likely gender, age, and emotional tone based on the provided images and their dialogue.
-
-Then, review the following catalog of available voices and select the single best voice that matches the speaker's profile.
-
-**Available Voice Catalog:**
-\${voiceCatalog}
-
-**Dialogue Context:** "\${speakerTextContext}"
-
-Respond ONLY with a single JSON object with this exact structure: { "gender": "string", "age": "string", "emotion": "string", "voiceName": "string" }.
-The value for "voiceName" MUST be one of the names from the "Available Voice Catalog" provided above.\`;
+        const analysisPrompt = 'You are an expert voice casting director. Your task is to create a profile for a speaker for voice dubbing.\n\n' +
+          'Analyze the speaker\'s likely gender, age, and emotional tone based on the provided images and their dialogue.\n\n' +
+          'Then, review the following catalog of available voices and select the single best voice that matches the speaker\'s profile.\n\n' +
+          '**Available Voice Catalog:**\n' + voiceCatalog + '\n\n' +
+          '**Dialogue Context:** \"' + speakerTextContext + '\"\n\n' +
+          'Respond ONLY with a single JSON object with this exact structure: { \"gender\": \"string\", \"age\": \"string\", \"emotion\": \"string\", \"voiceName\": \"string\" }.\n' +
+          'The value for \"voiceName\" MUST be one of the names from the \"Available Voice Catalog\" provided above.';
         
         const analysisResponse = await ai.models.generateContent({
           model: 'gemini-2.5-pro',
@@ -243,7 +237,7 @@ The value for "voiceName" MUST be one of the names from the "Available Voice Cat
       
       // Optimize chunk processing order
       const optimizedChunks = videoChunker.optimizeChunkOrder(videoChunks);
-      appendTtsLog(\`[CHUNKING] Video split into \${videoChunks.length} chunks: \${videoChunks.map(c => c.chunkType).join(', ')}\`);
+      appendTtsLog('[CHUNKING] Video split into ' + videoChunks.length + ' chunks: ' + videoChunks.map(c => c.chunkType).join(', '));
 
       // Step 6: Generate Dubbed Audio with Intelligent Chunk-based Processing
       setProgressMessage('Generating dubbed audio');
@@ -261,7 +255,7 @@ The value for "voiceName" MUST be one of the names from the "Available Voice Cat
 
       // Process chunks with type-specific optimization
       for (const chunk of optimizedChunks) {
-        appendTtsLog(\`[PROCESSING_CHUNK] Type: \${chunk.chunkType}, Speakers: \${chunk.speakers.join(', ')}, Duration: \${(chunk.endTime - chunk.startTime).toFixed(2)}s\`);
+        appendTtsLog('[PROCESSING_CHUNK] Type: ' + chunk.chunkType + ', Speakers: ' + chunk.speakers.join(', ') + ', Duration: ' + (chunk.endTime - chunk.startTime).toFixed(2) + 's');
 
         for (const segment of chunk.segments) {
           const translatedSeg = translatedSegments.find(
@@ -274,7 +268,7 @@ The value for "voiceName" MUST be one of the names from the "Available Voice Cat
           const speakerProfile = speakerProfiles.get(segment.speakerId);
           if (!speakerProfile || !speakerProfile.voiceName) continue;
 
-          appendTtsLog(\`[TTS][REQUEST] Segment: "\${translatedSeg.text}" | Speaker: \${segment.speakerId} | Type: \${chunk.chunkType}\`);
+          appendTtsLog('[TTS][REQUEST] Segment: "' + translatedSeg.text + '" | Speaker: ' + segment.speakerId + ' | Type: ' + chunk.chunkType);
 
           try {
             const audioResponse = await ai.models.generateContent({
@@ -299,12 +293,12 @@ The value for "voiceName" MUST be one of the names from the "Available Voice Cat
                 chunkType: chunk.chunkType,
               });
 
-              appendTtsLog(\`[TTS][SUCCESS] Generated audio for "\${translatedSeg.text.substring(0, 50)}..."\`);
+              appendTtsLog('[TTS][SUCCESS] Generated audio for "' + translatedSeg.text.substring(0, 50) + '..."');
             } else {
-              appendTtsLog(\`[TTS][ERROR] No audio data for: "\${translatedSeg.text}"\`);
+              appendTtsLog('[TTS][ERROR] No audio data for: "' + translatedSeg.text + '"');
             }
           } catch (ttsError) {
-            appendTtsLog(\`[TTS][EXCEPTION] \${translatedSeg.text.substring(0, 50)}... Error: \${JSON.stringify(ttsError)}\`);
+            appendTtsLog('[TTS][EXCEPTION] ' + translatedSeg.text.substring(0, 50) + '... Error: ' + JSON.stringify(ttsError));
           }
         }
       }
@@ -383,4 +377,3 @@ The value for "voiceName" MUST be one of the names from the "Available Voice Cat
 
   return { processingState, progressMessage, dubbedVideoUrl, error, processVideo, ttsLogs };
 };
-```
