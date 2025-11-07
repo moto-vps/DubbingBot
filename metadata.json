@@ -1,0 +1,5 @@
+{
+  "name": "Gemini Video Dubber",
+  "description": "An application that uses Gemini to transcribe, translate, and re-voice an uploaded video's dialogue into a different language using multi-speaker text-to-speech. It analyzes speakers to create the best possible dubbing.",
+  "requestFramePermissions": []
+}
