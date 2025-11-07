@@ -1,16 +1,3 @@
-# AudioMixer.ts
-
-```typescript
-/**
- * AudioMixer: Handles intelligent audio blending for overlapping dialogue
- * 
- * When multiple speakers overlap, this mixer:
- * 1. Normalizes individual audio tracks to prevent clipping
- * 2. Applies gentle compression to maintain clarity
- * 3. Mixes multiple speaker audio at the correct time positions
- * 4. Prevents distortion through careful gain staging
- */
-
 export class AudioMixer {
   private audioContext: AudioContext;
   private targetSampleRate: number = 24000;
