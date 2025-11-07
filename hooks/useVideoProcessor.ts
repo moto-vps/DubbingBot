@@ -1,6 +1,3 @@
-# useVideoProcessor-UPDATED.ts
-
-```typescript
 import { useState, useCallback } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import type { GenerateContentResponse, Part } from "@google/genai";
